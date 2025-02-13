@@ -1,32 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Referințe la elementele HTML
-  const startBtn       = document.getElementById("startBtn");
-
-  // Puzzle 1
-  const puzzle1        = document.getElementById("puzzle1");
-  const puzzle1Grid    = document.getElementById("puzzle1Grid");
+  const startBtn = document.getElementById("startBtn");
+  const puzzle1 = document.getElementById("puzzle1");
+  const puzzle1Grid = document.getElementById("puzzle1Grid");
   const puzzle1Message = document.getElementById("puzzle1Message");
   const btnPuzzle1Done = document.getElementById("btnPuzzle1Done");
 
-  // Puzzle 2 (Memory)
-  const puzzle2        = document.getElementById("puzzle2");
-  const memoryGame     = document.getElementById("memory-game");
+  const puzzle2 = document.getElementById("puzzle2");
+  const memoryGame = document.getElementById("memory-game");
   const puzzle2Message = document.getElementById("puzzle2Message");
   const btnPuzzle2Done = document.getElementById("btnPuzzle2Done");
 
-  // Mesaj final
-  const finalMessage   = document.getElementById("finalMessage");
-  const yesBtn         = document.getElementById("yesBtn");
-  const noBtn          = document.getElementById("noBtn");
-  const pupicMsg       = document.getElementById("pupicMessage"); // Elementul <p> unde afișăm "Bravo..."
+  const finalMessage = document.getElementById("finalMessage");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+  const pupicMsg = document.getElementById("pupicMessage");
 
-  // =========================================
-  //        JOC 1: Puzzle 4×4 Drag & Swap
-  // =========================================
+  // =========================
+  //  JOC 1: PUZZLE 4×4
+  // =========================
   const rows = 4;
   const cols = 4;
-  const totalTiles = rows * cols; // 16
-  // Ordinea corectă (0..15)
+  const totalTiles = rows * cols;
   const correctOrder = Array.from({ length: totalTiles }, (_, i) => i);
   let puzzle1Order = [...correctOrder];
 
@@ -49,41 +43,65 @@ document.addEventListener("DOMContentLoaded", () => {
     puzzle1Order.forEach((tileIndex, i) => {
       const tileEl = document.createElement("div");
       tileEl.classList.add("tile");
+
       const row = Math.floor(tileIndex / cols);
       const col = tileIndex % cols;
       tileEl.style.backgroundPosition = `-${col * 80}px -${row * 80}px`;
 
-      tileEl.setAttribute("draggable", "true");
-      tileEl.dataset.currentPos = i;
-      tileEl.dataset.tileIndex = tileIndex;
+      tileEl.dataset.index = i;
 
-      tileEl.addEventListener("dragstart", onDragStartPuzzle);
-      tileEl.addEventListener("dragover", onDragOverPuzzle);
-      tileEl.addEventListener("drop", (e) => onDropPuzzle(e, puzzle1Order));
+      tileEl.setAttribute("draggable", "true");
+      tileEl.addEventListener("dragstart", onDragStart);
+      tileEl.addEventListener("dragover", onDragOver);
+      tileEl.addEventListener("drop", onDrop);
+
+      tileEl.addEventListener("touchstart", onTouchStart);
+      tileEl.addEventListener("touchmove", onTouchMove);
+      tileEl.addEventListener("touchend", onTouchEnd);
 
       puzzle1Grid.appendChild(tileEl);
     });
   }
 
-  let draggedPos = null;
-  function onDragStartPuzzle(e) {
-    draggedPos = e.target.dataset.currentPos;
-    e.dataTransfer.setData("text/plain", draggedPos);
+  let draggedTile = null;
+  let targetTile = null;
+
+  function onDragStart(e) {
+    draggedTile = e.target;
   }
-  function onDragOverPuzzle(e) {
+  function onDragOver(e) {
     e.preventDefault();
   }
-  function onDropPuzzle(e, orderArray) {
+  function onDrop(e) {
     e.preventDefault();
-    const targetPos = e.target.dataset.currentPos;
-    if (draggedPos === null || targetPos === undefined) return;
+    targetTile = e.target;
+    swapTiles();
+  }
 
-    const fromPos = parseInt(draggedPos, 10);
-    const toPos   = parseInt(targetPos, 10);
+  function onTouchStart(e) {
+    draggedTile = e.target;
+  }
+  function onTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element && element.classList.contains("tile")) {
+      targetTile = element;
+    }
+  }
+  function onTouchEnd() {
+    if (draggedTile && targetTile) {
+      swapTiles();
+    }
+  }
 
-    [orderArray[fromPos], orderArray[toPos]] = [orderArray[toPos], orderArray[fromPos]];
-    draggedPos = null;
-
+  function swapTiles() {
+    if (!draggedTile || !targetTile) return;
+    const index1 = draggedTile.dataset.index;
+    const index2 = targetTile.dataset.index;
+    [puzzle1Order[index1], puzzle1Order[index2]] = [puzzle1Order[index2], puzzle1Order[index1]];
+    draggedTile = null;
+    targetTile = null;
     renderPuzzle1();
     checkPuzzle1Solved();
   }
@@ -102,9 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
     initPuzzle2();
   });
 
-  // =========================================
-  //        JOC 2: Memory 4×4 (Inimioare)
-  // =========================================
+  // =========================
+  //  JOC 2: MEMORY 4×4
+  // =========================
   const cardImages = [
     "https://cdn-icons-png.flaticon.com/512/2107/2107952.png",
     "https://cdn-icons-png.flaticon.com/512/138/138533.png",
@@ -116,19 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://cdn-icons-png.flaticon.com/512/2659/2659980.png"
   ];
   let memoryCards = [...cardImages, ...cardImages];
-  let firstCard  = null;
-  let lockBoard  = false;
+  let firstCard = null;
+  let lockBoard = false;
   let pairsFound = 0;
-  const totalPairs = cardImages.length; // 8
 
   function initPuzzle2() {
-    puzzle2Message.classList.add("hidden");
-    btnPuzzle2Done.classList.add("hidden");
-
-    firstCard  = null;
-    lockBoard  = false;
-    pairsFound = 0;
-
     shuffleArray(memoryCards);
     renderMemoryGame();
   }
@@ -153,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.appendChild(front);
       card.appendChild(back);
-      card.addEventListener("click", () => flipCard(card));
 
+      card.addEventListener("click", () => flipCard(card));
       memoryGame.appendChild(card);
     });
   }
@@ -173,13 +183,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function checkMatch(card1, card2) {
-    const img1 = card1.querySelector(".front img").src;
-    const img2 = card2.querySelector(".front img").src;
-
-    if (img1 === img2) {
+    if (card1.querySelector(".front img").src === card2.querySelector(".front img").src) {
       pairsFound++;
       firstCard = null;
-      if (pairsFound === totalPairs) {
+      if (pairsFound === cardImages.length) {
         puzzle2Message.classList.remove("hidden");
         btnPuzzle2Done.classList.remove("hidden");
       }
@@ -199,52 +206,19 @@ document.addEventListener("DOMContentLoaded", () => {
     finalMessage.classList.remove("hidden");
   });
 
-  // =========================================
-  //        Mesaj final (Da / Nu)
-  // =========================================
-  let scaleFactor = 1;
+  // =========================
+  //  Mesaj final (DA/NU)
+  // =========================
   yesBtn.addEventListener("click", () => {
-    // 1) Pornește inimioarele
-    startHeartsAnimation();
-
-    // 2) Afișează mesaj "Bravo, ai câștigat un pupic!"
     pupicMsg.textContent = "Bravo, ai câștigat un pupic și un muiuț!";
     pupicMsg.classList.remove("hidden");
   });
 
   noBtn.addEventListener("click", () => {
-    scaleFactor += 0.1;
-    yesBtn.style.transform = `scale(${scaleFactor})`;
+    yesBtn.style.transform = `scale(${parseFloat(yesBtn.style.transform.replace("scale(", "").replace(")", "")) + 0.1})`;
   });
 
-  function startHeartsAnimation() {
-    const heartsContainer = document.getElementById("hearts-container");
-
-    const intervalId = setInterval(() => {
-      const heart = document.createElement("div");
-      heart.innerHTML = "&#10084;";
-      heart.style.position = "absolute";
-      heart.style.fontSize = `${Math.floor(Math.random() * 20) + 20}px`;
-      heart.style.color = "red";
-      heart.style.left = Math.random() * 100 + "%";
-      heart.style.top = "-50px";
-      heart.style.animation = "fall 3s linear";
-
-      heartsContainer.appendChild(heart);
-
-      setTimeout(() => {
-        heartsContainer.removeChild(heart);
-      }, 3000);
-    }, 300);
-  }
-
-  // =========================================
-  //       Funcție de amestecare
-  // =========================================
   function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
+    arr.sort(() => Math.random() - 0.5);
   }
 });

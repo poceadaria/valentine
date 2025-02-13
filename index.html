@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <title>Două jocuri pentru iubitul meu</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Titlu personalizat -->
+    <h1>Rezolvă dacă vrei să ajungi la inima mea!</h1>
+
+    <!-- Buton Start -->
+    <button id="startBtn" class="btn">Start Joc</button>
+
+    <!-- Puzzle 4x4 Drag & Swap -->
+    <div id="puzzle1" class="hidden">
+      <h2>Joc 1: Puzzle 4×4 ( Drag &amp; Swap)</h2>
+      <p>Mută piesele prin tragere (drag) una peste alta pentru a le inversa!</p>
+      <div id="puzzle1Grid" class="puzzle-grid"></div>
+
+      <p id="puzzle1Message" class="hidden success-msg">
+        Felicitări, ai terminat Puzzle-ul 4×4!
+      </p>
+      <button id="btnPuzzle1Done" class="btn hidden">Treci la Joc 2: Memory</button>
+    </div>
+
+    <!-- Memory 4x4 -->
+    <div id="puzzle2" class="hidden">
+      <h2>Joc 2: Memory 4×4</h2>
+      <p>Găsește toate cele 8 perechi!</p>
+      <div id="memory-game" class="memory-grid"></div>
+
+      <p id="puzzle2Message" class="hidden success-msg">
+        Bravo! Ai găsit toate perechile!
+      </p>
+      <button id="btnPuzzle2Done" class="btn hidden">Vezi surpriza finală</button>
+    </div>
+
+    <!-- Mesaj final -->
+    <div id="finalMessage" class="hidden">
+      <h2>Felicitări!</h2>
+      <p class="big-text">Te iubesc mult!!</p>
+      <p class="big-text">Vrei să fii my valentine?</p>
+      <div class="valentine-buttons">
+        <button id="yesBtn" class="btn">Da</button>
+        <button id="noBtn" class="btn">Nu</button>
+      </div>
+      <div id="hearts-container"></div>
+      <p id="pupicMessage" class="hidden"></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

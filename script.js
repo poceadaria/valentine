@@ -72,48 +72,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 function onPointerDownPuzzle(e) {
-  // Previne comportamentul implicit de scroll pe mobil
-  e.preventDefault();
+  e.preventDefault(); // oprește comportamentul de scroll la contact inițial
 
-  // Reținem tile-ul apăsat și poziția acestuia
   draggedTile = e.currentTarget;
   draggedPos  = parseInt(draggedTile.dataset.currentPos);
 
-  // Capturăm evenimentul pointer ca să primim pointerup tot noi
+  // Primim pointermove și pointerup tot noi
   draggedTile.setPointerCapture(e.pointerId);
 
-  // Adăugăm pointerup pe tile (sau pe document) pentru a detecta unde ridică degetul
+  // Adăugăm pointermove și pointerup pe tile
+  draggedTile.addEventListener("pointermove", onPointerMovePuzzle);
   draggedTile.addEventListener("pointerup", onPointerUpPuzzle);
 }
 
+function onPointerMovePuzzle(e) {
+  e.preventDefault(); // IMPORTANT: oprește scroll-ul când degetul se mișcă
+  // Nu avem cod care să miște piesa efectiv, dar
+  // astfel ne asigurăm că nu face scroll pe mobil.
+}
 
-  function onPointerUpPuzzle(e) {
-    // Scoatem listener-ul de pointerup
-    e.currentTarget.removeEventListener("pointerup", onPointerUpPuzzle);
+function onPointerUpPuzzle(e) {
+  e.currentTarget.removeEventListener("pointermove", onPointerMovePuzzle);
+  e.currentTarget.removeEventListener("pointerup", onPointerUpPuzzle);
 
-    // Determinăm elementul de sub coordonatele unde s-a ridicat degetul
-    // e.clientX, e.clientY — coordonatele pointerului
-    const targetElement = document.elementFromPoint(e.clientX, e.clientY);
-
-    // Verificăm dacă am dat drumul deasupra altei piese (tile)
-    if (targetElement && targetElement.classList.contains("tile")) {
-      const targetPos = parseInt(targetElement.dataset.currentPos);
-
-      if (targetPos !== draggedPos) {
-        // Facem swap între piesele din puzzle1Order
-        [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
-          [puzzle1Order[targetPos], puzzle1Order[draggedPos]];
-
-        // Reafișăm puzzle-ul
-        renderPuzzle1();
-        checkPuzzle1Solved();
-      }
+  // Determinăm elementul sub pointer
+  const targetElement = document.elementFromPoint(e.clientX, e.clientY);
+  if (targetElement && targetElement.classList.contains("tile")) {
+    const targetPos = parseInt(targetElement.dataset.currentPos);
+    if (targetPos !== draggedPos) {
+      // Facem swap
+      [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
+        [puzzle1Order[targetPos], puzzle1Order[draggedPos]];
+      renderPuzzle1();
+      checkPuzzle1Solved();
     }
-
-    // Resetăm variabilele de drag
-    draggedTile = null;
-    draggedPos  = null;
   }
+
+  draggedTile = null;
+  draggedPos  = null;
+}
 
   function checkPuzzle1Solved() {
     for (let i = 0; i < puzzle1Order.length; i++) {

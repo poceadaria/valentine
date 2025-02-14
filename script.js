@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const finalMessage   = document.getElementById("finalMessage");
   const yesBtn         = document.getElementById("yesBtn");
   const noBtn          = document.getElementById("noBtn");
-  const pupicMsg       = document.getElementById("pupicMessage"); // Elementul <p> unde afișăm "Bravo..."
+  const pupicMsg       = document.getElementById("pupicMessage"); 
 
   // =========================================
   //        JOC 1: Puzzle 4×4 Drag & Swap
@@ -56,18 +56,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const tileEl = document.createElement("div");
       tileEl.classList.add("tile");
 
-      // Poziția de fundal (imparte imaginea 4x4)
-      // tileIndex: 0..15
+      // row & col pentru acea bucată de imagine
       const row = Math.floor(tileIndex / cols); // 0..3
       const col = tileIndex % cols;             // 0..3
 
-      // Folosim 25% (100% / 4) per coloană/rând,
-      // deoarece background-size e 400% x 400%.
+      // Imagine 400x400 => 400% x 400% la un puzzle 4x4
+      tileEl.style.backgroundImage    = "url('https://via.placeholder.com/400')"; 
+        // ↑ Înlocuiește cu link-ul tău, ex: "url('imaginea_mea.png')"
+      tileEl.style.backgroundSize     = "400% 400%";
       tileEl.style.backgroundPosition = `${col * 25}% ${row * 25}%`;
+      tileEl.style.backgroundRepeat   = "no-repeat";
 
       // Atribuim datele necesare
-      tileEl.dataset.currentPos = i;       // indexul actual în puzzle1Order
-      tileEl.dataset.tileIndex  = tileIndex; // indexul corect 0..15
+      tileEl.dataset.currentPos = i;
+      tileEl.dataset.tileIndex  = tileIndex;
 
       // Adăugăm evenimente pointer
       tileEl.addEventListener("pointerdown", onPointerDownPuzzle);
@@ -77,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onPointerDownPuzzle(e) {
-    // Previne scroll-ul/tragerea paginii pe mobil
+    // Previne scroll-ul pe mobil
     e.preventDefault();
 
     // Reținem tile-ul apăsat și poziția acestuia
@@ -92,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onPointerUpPuzzle(e) {
-    // Scoatem listener-ul de pointerup
     e.currentTarget.removeEventListener("pointerup", onPointerUpPuzzle);
 
     // Determinăm elementul de sub coordonatele unde s-a ridicat degetul
@@ -102,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (targetElement && targetElement.classList.contains("tile")) {
       const targetPos = parseInt(targetElement.dataset.currentPos);
       if (targetPos !== draggedPos) {
-        // Facem swap între piesele din puzzle1Order
+        // Swap între piesele din puzzle1Order
         [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
           [puzzle1Order[targetPos], puzzle1Order[draggedPos]];
 
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < puzzle1Order.length; i++) {
       if (puzzle1Order[i] !== correctOrder[i]) return;
     }
-    // Dacă am ajuns aici, toate se potrivesc
+    // Dacă am ajuns aici, puzzle-ul e rezolvat
     puzzle1Message.classList.remove("hidden");
     btnPuzzle1Done.classList.remove("hidden");
   }
@@ -145,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://cdn-icons-png.flaticon.com/512/2589/2589175.png",
     "https://cdn-icons-png.flaticon.com/512/2659/2659980.png"
   ];
-  let memoryCards = [...cardImages, ...cardImages];
+  let memoryCards = [...cardImages, ...cardImages]; // dublate
   let firstCard  = null;
   let lockBoard  = false;
   let pairsFound = 0;
@@ -183,8 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.appendChild(front);
       card.appendChild(back);
-
       card.addEventListener("click", () => flipCard(card));
+
       memoryGame.appendChild(card);
     });
   }
@@ -199,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
       firstCard = card;
       return;
     }
-
     checkMatch(firstCard, card);
   }
 
@@ -235,10 +235,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================
   let scaleFactor = 1;
   yesBtn.addEventListener("click", () => {
-    // 1) Pornește inimioarele
+    // Pornește inimioarele
     startHeartsAnimation();
-
-    // 2) Afișează mesaj
+    // Afișează mesaj
     pupicMsg.textContent = "Bravo, ai câștigat un pupic și un muiuț!";
     pupicMsg.classList.remove("hidden");
   });
@@ -251,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function startHeartsAnimation() {
     const heartsContainer = document.getElementById("hearts-container");
 
-    const intervalId = setInterval(() => {
+    setInterval(() => {
       const heart = document.createElement("div");
       heart.innerHTML = "&#10084;";
       heart.style.position = "absolute";

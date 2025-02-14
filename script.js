@@ -51,18 +51,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderPuzzle1() {
     puzzle1Grid.innerHTML = "";
+
     puzzle1Order.forEach((tileIndex, i) => {
       const tileEl = document.createElement("div");
       tileEl.classList.add("tile");
 
-      // Poziția de fundal
-      const row = Math.floor(tileIndex / cols);
-      const col = tileIndex % cols;
-      tileEl.style.backgroundPosition = `-${col * 80}px -${row * 80}px`;
+      // Poziția de fundal (imparte imaginea 4x4)
+      // tileIndex: 0..15
+      const row = Math.floor(tileIndex / cols); // 0..3
+      const col = tileIndex % cols;             // 0..3
+
+      // Folosim 25% (100% / 4) per coloană/rând,
+      // deoarece background-size e 400% x 400%.
+      tileEl.style.backgroundPosition = `${col * 25}% ${row * 25}%`;
 
       // Atribuim datele necesare
-      tileEl.dataset.currentPos = i;       // indexul în puzzle1Order
-      tileEl.dataset.tileIndex  = tileIndex; // 0..15 (poz. corectă)
+      tileEl.dataset.currentPos = i;       // indexul actual în puzzle1Order
+      tileEl.dataset.tileIndex  = tileIndex; // indexul corect 0..15
 
       // Adăugăm evenimente pointer
       tileEl.addEventListener("pointerdown", onPointerDownPuzzle);
@@ -72,14 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onPointerDownPuzzle(e) {
+    // Previne scroll-ul/tragerea paginii pe mobil
+    e.preventDefault();
+
     // Reținem tile-ul apăsat și poziția acestuia
     draggedTile = e.currentTarget;
     draggedPos  = parseInt(draggedTile.dataset.currentPos);
 
-    // Capturăm evenimentul pointer ca să fim siguri că pointerup vine la noi
+    // Capturăm evenimentul pointer, ca să primim pointerup tot noi
     draggedTile.setPointerCapture(e.pointerId);
 
-    // Adăugăm pointerup pe tile (sau pe document) pentru a detecta unde ridică degetul
+    // Adăugăm pointerup pe tile pentru a detecta unde ridică degetul
     draggedTile.addEventListener("pointerup", onPointerUpPuzzle);
   }
 
@@ -88,13 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
     e.currentTarget.removeEventListener("pointerup", onPointerUpPuzzle);
 
     // Determinăm elementul de sub coordonatele unde s-a ridicat degetul
-    // e.clientX, e.clientY — coordonatele pointerului
     const targetElement = document.elementFromPoint(e.clientX, e.clientY);
 
     // Verificăm dacă am dat drumul deasupra altei piese (tile)
     if (targetElement && targetElement.classList.contains("tile")) {
       const targetPos = parseInt(targetElement.dataset.currentPos);
-
       if (targetPos !== draggedPos) {
         // Facem swap între piesele din puzzle1Order
         [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
@@ -127,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =========================================
-  //        JOC 2: Memory 4×4 (Inimioare)
+  //        JOC 2: Memory 4×4
   // =========================================
   const cardImages = [
     "https://cdn-icons-png.flaticon.com/512/2107/2107952.png",
@@ -167,8 +173,8 @@ document.addEventListener("DOMContentLoaded", () => {
       front.classList.add("front");
       const frontImg = document.createElement("img");
       frontImg.src = imgSrc;
-      frontImg.style.width = "40px";
-      frontImg.style.height = "40px";
+      frontImg.style.width = "60%";
+      frontImg.style.height = "60%";
       front.appendChild(frontImg);
 
       const back = document.createElement("div");
@@ -177,8 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.appendChild(front);
       card.appendChild(back);
-      card.addEventListener("click", () => flipCard(card));
 
+      card.addEventListener("click", () => flipCard(card));
       memoryGame.appendChild(card);
     });
   }
@@ -193,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       firstCard = card;
       return;
     }
+
     checkMatch(firstCard, card);
   }
 
@@ -231,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1) Pornește inimioarele
     startHeartsAnimation();
 
-    // 2) Afișează mesaj "Bravo, ai câștigat un pupic și un muiuț!"
+    // 2) Afișează mesaj
     pupicMsg.textContent = "Bravo, ai câștigat un pupic și un muiuț!";
     pupicMsg.classList.remove("hidden");
   });

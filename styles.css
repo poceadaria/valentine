@@ -53,6 +53,9 @@
     grid-template-rows: repeat(4, 80px);
     gap: 2px;
     position: relative;
+      touch-action: none;    /* Blochează gesturile default (scroll) în interiorul grilei */
+  user-select: none;     /* Nu selectăm textul la atingere */
+  overscroll-behavior: none;
   }
   
   /* Fiecare piesă din Puzzle 1 */
@@ -64,6 +67,8 @@
     border: 1px solid #fff;
     cursor: move;
     transition: transform 0.1s;
+      touch-action: none;    /* Blochează scrollul dacă ating direct piesa */
+  user-select: none;
   }
   
   /* Efect la hover puzzle 1 */

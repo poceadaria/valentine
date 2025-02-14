@@ -71,17 +71,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function onPointerDownPuzzle(e) {
-    // Reținem tile-ul apăsat și poziția acestuia
-    draggedTile = e.currentTarget;
-    draggedPos  = parseInt(draggedTile.dataset.currentPos);
+function onPointerDownPuzzle(e) {
+  // Previne comportamentul implicit de scroll pe mobil
+  e.preventDefault();
 
-    // Capturăm evenimentul pointer ca să fim siguri că pointerup vine la noi
-    draggedTile.setPointerCapture(e.pointerId);
+  // Reținem tile-ul apăsat și poziția acestuia
+  draggedTile = e.currentTarget;
+  draggedPos  = parseInt(draggedTile.dataset.currentPos);
 
-    // Adăugăm pointerup pe tile (sau pe document) pentru a detecta unde ridică degetul
-    draggedTile.addEventListener("pointerup", onPointerUpPuzzle);
-  }
+  // Capturăm evenimentul pointer ca să primim pointerup tot noi
+  draggedTile.setPointerCapture(e.pointerId);
+
+  // Adăugăm pointerup pe tile (sau pe document) pentru a detecta unde ridică degetul
+  draggedTile.addEventListener("pointerup", onPointerUpPuzzle);
+}
+
 
   function onPointerUpPuzzle(e) {
     // Scoatem listener-ul de pointerup

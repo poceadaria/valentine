@@ -1,169 +1,184 @@
 /* Reset de bază */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: "Segoe UI", Tahoma, sans-serif;
-  background-color: #ffe6e6;
-}
-
-.container {
-  max-width: 700px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 20px;
-}
-
-h1 {
-  margin-bottom: 20px;
-  color: #d6336c;
-}
-
-.hidden {
-  display: none;
-}
-
-.btn {
-  background-color: #ff5c8a;
-  border: none;
-  padding: 12px 24px;
-  color: #fff;
-  cursor: pointer;
-  margin: 20px 10px;
-  border-radius: 5px;
-  font-size: 16px;
-}
-.btn:hover {
-  background-color: #e0557c;
-}
-
-/* =========================
-   Puzzle 4×4 - responsive
-   ========================= */
-.puzzle-grid {
-  /* pe ecrane mici: ~90% din lățime, max 320px, formă pătrată */
-  width: 90vw;
-  max-width: 320px;
-  aspect-ratio: 1 / 1;
-  margin: 20px auto;
-  position: relative;
-  border: 2px dashed #ff5c8a;
-  background-color: #fff;
-}
-
-/* Tile-urile sunt absolute, dimensiunea se setează din JS */
-.tile {
-  position: absolute;
-  border: 1px solid #fff;
-  background-image: url("https://cdn-icons-png.flaticon.com/512/7421/7421739.png");
-  background-size: 400% 400%; /* 4x4 => 400% */
-  cursor: grab; /* doar indicativ pe desktop */
-  transition: transform 0.1s;
-}
-.tile:active {
-  cursor: grabbing;
-}
-.tile:hover {
-  transform: scale(1.03);
-  border-color: #ff5c8a;
-}
-
-/* =========================
-   Memory 4×4
-   ========================= */
-.memory-grid {
-  width: 300px;
-  margin: 20px auto;
-  display: grid;
-  grid-template-columns: repeat(4, 60px);
-  gap: 10px;
-  justify-content: center;
-}
-
-.card {
-  width: 60px;
-  height: 60px;
-  position: relative;
-  cursor: pointer;
-  perspective: 1000px;
-}
-.card:hover {
-  transform: scale(1.08);
-}
-.front, .back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 5px;
-  transition: transform 0.5s;
-  transform-style: preserve-3d;
-}
-.front {
-  background-color: #fff;
-  transform: rotateY(180deg);
-}
-.back {
-  background-color: #ffcccc;
-  font-size: 24px;
-  color: #d6336c;
-}
-.card.flipped .front {
-  transform: rotateY(0deg);
-}
-.card.flipped .back {
-  transform: rotateY(180deg);
-}
-
-/* Mesaje */
-.success-msg {
-  color: #d6336c;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-.big-text {
-  font-size: 1.5rem;
-  margin: 10px 0;
-}
-
-/* Butoane Da / Nu */
-.valentine-buttons {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-/* Inimioare care cad */
-#hearts-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 9999;
-}
-@keyframes fall {
-  0% {
-    transform: translateY(-50px) rotate(0deg);
-    opacity: 1;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
-  100% {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
+  
+  body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background-color: #ffe6e6;
   }
-}
-#pupicMessage {
-  color: red;
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-top: 20px;
-}
+  
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  h1 {
+    margin-bottom: 20px;
+    color: #d6336c;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .btn {
+    background-color: #ff5c8a;
+    border: none;
+    padding: 12px 24px;
+    color: #fff;
+    cursor: pointer;
+    margin: 20px 10px 20px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .btn:hover {
+    background-color: #e0557c;
+  }
+  
+  /* =========================
+     JOC 1: Puzzle 4×4 Drag & Swap
+     ========================= */
+  .puzzle-grid {
+    width: 320px;  /* 4 piese x 80px = 320 */
+    height: 320px; 
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-template-rows: repeat(4, 80px);
+    gap: 2px;
+    position: relative;
+  }
+  
+  /* Fiecare piesă din Puzzle 1 */
+  .tile {
+    width: 80px;
+    height: 80px;
+    background-image: url("https://cdn-icons-png.flaticon.com/512/7421/7421739.png");
+    background-size: 320px 320px; /* 4x4 -> 320 px total imaginea */
+    border: 1px solid #fff;
+    cursor: move;
+    transition: transform 0.1s;
+  }
+  
+  /* Efect la hover puzzle 1 */
+  .tile:hover {
+    transform: scale(1.05);
+    border-color: #ff5c8a;
+  }
+  
+  /* =========================
+     JOC 2: Memory 4×4
+     ========================= */
+  .memory-grid {
+    width: 300px; /* puțin mai mic să iasă tiles mai mici */
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    grid-gap: 10px;
+    justify-content: center;
+  }
+  
+  /* Fiecare card: față + spate */
+  .card {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    cursor: pointer;
+    perspective: 1000px; /* flip 3D */
+  }
+  
+  .front, .back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+  }
+  
+  /* Fața cardului */
+  .front {
+    background-color: #fff;
+    transform: rotateY(180deg);
+  }
+  
+  /* Spatele cardului */
+  .back {
+    background-color: #ffcccc;
+    font-size: 24px;
+    color: #d6336c;
+    transform: rotateY(0deg);
+  }
+  
+  /* Când cardul e întors */
+  .card.flipped .front {
+    transform: rotateY(0deg);
+  }
+  .card.flipped .back {
+    transform: rotateY(180deg);
+  }
+  
+  /* O mică animație la hover (opțional) */
+  .card:hover {
+    transform: scale(1.08);
+  }
+  
+  /* Mesaje */
+  .success-msg {
+    color: #d6336c;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  .big-text {
+    font-size: 1.5rem;
+    margin: 10px 0;
+  }
+  
+  /* Butoane Da / Nu */
+  .valentine-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  /* Container pentru inimioare */
+  #hearts-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+  }
+  
+  /* Animația inimioarelor */
+  @keyframes fall {
+    0% {
+      transform: translateY(-50px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+  #pupicMessage {
+    color: red;
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-top: 20px;
+  }  

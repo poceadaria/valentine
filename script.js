@@ -1,36 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Referințe la elementele HTML
+  // Referințe
   const startBtn       = document.getElementById("startBtn");
-
-  // Puzzle 1
   const puzzle1        = document.getElementById("puzzle1");
   const puzzle1Grid    = document.getElementById("puzzle1Grid");
   const puzzle1Message = document.getElementById("puzzle1Message");
   const btnPuzzle1Done = document.getElementById("btnPuzzle1Done");
 
-  // Puzzle 2 (Memory)
   const puzzle2        = document.getElementById("puzzle2");
   const memoryGame     = document.getElementById("memory-game");
   const puzzle2Message = document.getElementById("puzzle2Message");
   const btnPuzzle2Done = document.getElementById("btnPuzzle2Done");
 
-  // Mesaj final
   const finalMessage   = document.getElementById("finalMessage");
   const yesBtn         = document.getElementById("yesBtn");
   const noBtn          = document.getElementById("noBtn");
   const pupicMsg       = document.getElementById("pupicMessage");
 
-  // ============================
-  //  Puzzle 4×4 Drag & Swap
-  // ============================
+  // =============================
+  //      Puzzle 4×4 - Drag Real
+  // =============================
   const rows = 4;
   const cols = 4;
-  const totalTiles = rows * cols; // 16
-  const correctOrder = Array.from({ length: totalTiles }, (_, i) => i);
-  let puzzle1Order = [...correctOrder];
+  const correctOrder = [...Array(rows*cols).keys()]; // [0..15]
+  let puzzle1Order   = [...correctOrder];            // amestecăm
+  let tileWidth  = 80; // puzzle 320 => 80 px per tile
+  let tileHeight = 80;
 
   let draggedTile = null;
-  let draggedPos  = null;
+  let offsetX = 0, offsetY = 0; // offset de la colțul tile-ului
+  let startZIndex = 1; // tile-ul care e ridicat iese deasupra
+  let draggedPos = null; // indexul din puzzle1Order
 
   startBtn.addEventListener("click", () => {
     startBtn.classList.add("hidden");
@@ -41,63 +40,96 @@ document.addEventListener("DOMContentLoaded", () => {
   function initPuzzle1() {
     puzzle1Message.classList.add("hidden");
     btnPuzzle1Done.classList.add("hidden");
-
     shuffleArray(puzzle1Order);
     renderPuzzle1();
   }
 
   function renderPuzzle1() {
     puzzle1Grid.innerHTML = "";
+    // creează tile-uri conform puzzle1Order
     puzzle1Order.forEach((tileIndex, i) => {
       const tileEl = document.createElement("div");
       tileEl.classList.add("tile");
-
-      // Poziția în grilă
+      // Poziție "corectă" în imagine (tileIndex)
       const row = Math.floor(tileIndex / cols);
       const col = tileIndex % cols;
-      // background-position în procente (col * 25%, row * 25%)
-      tileEl.style.backgroundPosition = `${col * 25}% ${row * 25}%`;
+      tileEl.style.backgroundPosition = `-${col * tileWidth}px -${row * tileHeight}px`;
+      // Poziție actuală (i)
+      const currentRow = Math.floor(i / cols);
+      const currentCol = i % cols;
+      tileEl.style.left = (currentCol * tileWidth) + "px";
+      tileEl.style.top  = (currentRow * tileHeight) + "px";
 
-      tileEl.dataset.currentPos = i;
-      tileEl.dataset.tileIndex = tileIndex;
+      tileEl.dataset.indexPuzzleOrder = i;       // indexul unde e plasat
+      tileEl.dataset.tileIndex        = tileIndex; // 0..15 (identifică bucata)
 
-      tileEl.addEventListener("pointerdown", onPointerDownPuzzle);
+      // Pointer events
+      tileEl.addEventListener("pointerdown", onPointerDown);
       puzzle1Grid.appendChild(tileEl);
     });
   }
 
-  function onPointerDownPuzzle(e) {
+  function onPointerDown(e) {
     draggedTile = e.currentTarget;
-    draggedPos  = parseInt(draggedTile.dataset.currentPos);
+    // indexul din puzzle1Order
+    draggedPos = parseInt(draggedTile.dataset.indexPuzzleOrder);
 
-    // capturăm pointerul
+    // calcul offset față de colțul stânga-sus al tile-ului
+    const tileRect = draggedTile.getBoundingClientRect();
+    offsetX = e.clientX - tileRect.left;
+    offsetY = e.clientY - tileRect.top;
+
+    // ridicăm tile-ul deasupra
+    startZIndex++;
+    draggedTile.style.zIndex = startZIndex;
+
+    // ascultăm pointermove + pointerup
     draggedTile.setPointerCapture(e.pointerId);
-
-    // la pointerup vedem unde „dăm drumul”
-    draggedTile.addEventListener("pointerup", onPointerUpPuzzle);
+    draggedTile.addEventListener("pointermove", onPointerMove);
+    draggedTile.addEventListener("pointerup", onPointerUp);
   }
 
-  function onPointerUpPuzzle(e) {
-    e.currentTarget.removeEventListener("pointerup", onPointerUpPuzzle);
+  function onPointerMove(e) {
+    // Mutăm tile-ul după cursor
+    const containerRect = puzzle1Grid.getBoundingClientRect();
+    const newLeft = e.clientX - containerRect.left - offsetX;
+    const newTop  = e.clientY - containerRect.top  - offsetY;
 
-    const targetElement = document.elementFromPoint(e.clientX, e.clientY);
-    if (targetElement && targetElement.classList.contains("tile")) {
-      const targetPos = parseInt(targetElement.dataset.currentPos);
+    draggedTile.style.left = newLeft + "px";
+    draggedTile.style.top  = newTop + "px";
+  }
 
-      if (targetPos !== draggedPos) {
-        // swap in puzzle1Order
-        [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
-          [puzzle1Order[targetPos], puzzle1Order[draggedPos]];
+  function onPointerUp(e) {
+    // scoatem listenerii
+    draggedTile.removeEventListener("pointermove", onPointerMove);
+    draggedTile.removeEventListener("pointerup", onPointerUp);
 
-        renderPuzzle1();
-        checkPuzzle1Solved();
-      }
+    // găsim tile-ul sub pointer
+    const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+
+    if (elUnder && elUnder.classList.contains("tile") && elUnder !== draggedTile) {
+      // indexul tile-ului țintă
+      const targetPos = parseInt(elUnder.dataset.indexPuzzleOrder);
+
+      // facem swap în puzzle1Order
+      [puzzle1Order[draggedPos], puzzle1Order[targetPos]] =
+        [puzzle1Order[targetPos], puzzle1Order[draggedPos]];
+
+      renderPuzzle1();
+      checkPuzzle1Solved();
+    } else {
+      // dacă n-am dat drumul peste alt tile, reîncadrăm piesa la loc
+      // doar refacem tot puzzle-ul, piesa revine la poziția inițială
+      renderPuzzle1();
     }
+
     draggedTile = null;
-    draggedPos  = null;
+    offsetX = 0; offsetY = 0;
+    draggedPos = null;
   }
 
   function checkPuzzle1Solved() {
+    // dacă puzzle1Order coincide cu correctOrder => rezolvat
     for (let i = 0; i < puzzle1Order.length; i++) {
       if (puzzle1Order[i] !== correctOrder[i]) return;
     }
@@ -111,9 +143,9 @@ document.addEventListener("DOMContentLoaded", () => {
     initPuzzle2();
   });
 
-  // ============================
-  //  Joc 2: Memory 4×4
-  // ============================
+  // =============================
+  //      Memory 4×4
+  // =============================
   const cardImages = [
     "https://cdn-icons-png.flaticon.com/512/2107/2107952.png",
     "https://cdn-icons-png.flaticon.com/512/138/138533.png",
@@ -125,17 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://cdn-icons-png.flaticon.com/512/2659/2659980.png"
   ];
   let memoryCards = [...cardImages, ...cardImages];
-  let firstCard  = null;
-  let lockBoard  = false;
+  let firstCard = null;
+  let lockBoard = false;
   let pairsFound = 0;
-  const totalPairs = cardImages.length;
+  const totalPairs = cardImages.length; // 8
 
   function initPuzzle2() {
     puzzle2Message.classList.add("hidden");
     btnPuzzle2Done.classList.add("hidden");
-
-    firstCard  = null;
-    lockBoard  = false;
+    firstCard = null; 
+    lockBoard = false; 
     pairsFound = 0;
 
     shuffleArray(memoryCards);
@@ -206,16 +237,16 @@ document.addEventListener("DOMContentLoaded", () => {
     finalMessage.classList.remove("hidden");
   });
 
-  // ============================
-  //  Mesaj final (Da / Nu)
-  // ============================
-  let scaleFactor = 1;
+  // =============================
+  //     Final + inimioare
+  // =============================
   yesBtn.addEventListener("click", () => {
     startHeartsAnimation();
     pupicMsg.textContent = "Bravo, ai câștigat un pupic și un muiuț!";
     pupicMsg.classList.remove("hidden");
   });
 
+  let scaleFactor = 1;
   noBtn.addEventListener("click", () => {
     scaleFactor += 0.1;
     yesBtn.style.transform = `scale(${scaleFactor})`;
@@ -240,7 +271,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 300);
   }
 
-  // Funcție amestecare
+  // ============================
+  // Funcție amestecare array
+  // ============================
   function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

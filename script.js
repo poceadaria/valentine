@@ -233,7 +233,7 @@ function onPointerUpPuzzle(e) {
     startHeartsAnimation();
 
     // 2) Afișează mesaj "Bravo, ai câștigat un pupic și un muiuț!"
-    pupicMsg.textContent = "Bravo, ai câștigat un pupic și un muiuț!";
+    pupicMsg.textContent = "Bravo, ai câștigat un pupic!";
     pupicMsg.classList.remove("hidden");
   });
 
